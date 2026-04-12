@@ -66,4 +66,74 @@ public class HomeServiceRepository
         connection.Open();
         command.ExecuteNonQuery();
     }
+
+    public List<Customer> GetCustomers()
+    {
+        const string sql = """
+                           SELECT customer_id, name, email, phone, default_address
+                           FROM dbo.Customer
+                           ORDER BY customer_id DESC;
+                           """;
+        var items = new List<Customer>();
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = new SqlCommand(sql, connection);
+        connection.Open();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            items.Add(new Customer
+            {
+                CustomerId = reader.GetInt32(0),
+                Name = reader.GetString(1),
+                Email = reader.GetString(2),
+                Phone = reader.IsDBNull(3) ? null : reader.GetString(3),
+                DefaultAddress = reader.IsDBNull(4) ? null : reader.GetString(4)
+            });
+        }
+        return items;
+    }
+
+    public void AddCustomer(Customer customer)
+    {
+        const string sql = """
+                           INSERT INTO dbo.Customer (name, email, phone, default_address)
+                           VALUES (@name, @email, @phone, @default_address);
+                           """;
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@name", customer.Name);
+        command.Parameters.AddWithValue("@email", customer.Email);
+        command.Parameters.AddWithValue("@phone", (object?)customer.Phone ?? DBNull.Value);
+        command.Parameters.AddWithValue("@default_address", (object?)customer.DefaultAddress ?? DBNull.Value);
+        connection.Open();
+        command.ExecuteNonQuery();
+    }
+
+    public void UpdateCustomer(Customer customer)
+    {
+        const string sql = """
+                           UPDATE dbo.Customer
+                           SET name = @name, email = @email, phone = @phone, default_address = @default_address
+                           WHERE customer_id = @customer_id;
+                           """;
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@customer_id", customer.CustomerId);
+        command.Parameters.AddWithValue("@name", customer.Name);
+        command.Parameters.AddWithValue("@email", customer.Email);
+        command.Parameters.AddWithValue("@phone", (object?)customer.Phone ?? DBNull.Value);
+        command.Parameters.AddWithValue("@default_address", (object?)customer.DefaultAddress ?? DBNull.Value);
+        connection.Open();
+        command.ExecuteNonQuery();
+    }
+
+    public void DeleteCustomer(int customerId)
+    {
+        const string sql = "DELETE FROM dbo.Customer WHERE customer_id = @customer_id;";
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@customer_id", customerId);
+        connection.Open();
+        command.ExecuteNonQuery();
+    }
 }
