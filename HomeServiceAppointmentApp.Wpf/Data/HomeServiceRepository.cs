@@ -136,4 +136,107 @@ public class HomeServiceRepository
         connection.Open();
         command.ExecuteNonQuery();
     }
+
+    public List<HomeServiceAppointment> GetAppointments()
+    {
+        const string sql = """
+                           SELECT appointment_id, customer_id, address_line1, city, service_type, technician_name,
+                                  scheduled_date, start_time, status, fee_amount, paid_amount, payment_status
+                           FROM dbo.HomeServiceAppointment
+                           ORDER BY appointment_id DESC;
+                           """;
+        var items = new List<HomeServiceAppointment>();
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = new SqlCommand(sql, connection);
+        connection.Open();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            items.Add(new HomeServiceAppointment
+            {
+                AppointmentId = reader.GetInt32(0),
+                CustomerId = reader.GetInt32(1),
+                AddressLine1 = reader.GetString(2),
+                City = reader.IsDBNull(3) ? null : reader.GetString(3),
+                ServiceType = reader.GetString(4),
+                TechnicianName = reader.GetString(5),
+                ScheduledDate = reader.GetDateTime(6),
+                StartTime = reader.GetString(7),
+                Status = reader.GetString(8),
+                FeeAmount = reader.GetDecimal(9),
+                PaidAmount = reader.GetDecimal(10),
+                PaymentStatus = reader.GetString(11)
+            });
+        }
+        return items;
+    }
+
+    public void AddAppointment(HomeServiceAppointment appointment)
+    {
+        const string sql = """
+                           INSERT INTO dbo.HomeServiceAppointment
+                               (customer_id, address_line1, city, service_type, technician_name, scheduled_date, start_time, status, fee_amount, paid_amount, payment_status)
+                           VALUES
+                               (@customer_id, @address_line1, @city, @service_type, @technician_name, @scheduled_date, @start_time, @status, @fee_amount, @paid_amount, @payment_status);
+                           """;
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = new SqlCommand(sql, connection);
+        FillAppointmentParameters(command, appointment, includeId: false);
+        connection.Open();
+        command.ExecuteNonQuery();
+    }
+
+    public void UpdateAppointment(HomeServiceAppointment appointment)
+    {
+        const string sql = """
+                           UPDATE dbo.HomeServiceAppointment
+                           SET customer_id = @customer_id,
+                               address_line1 = @address_line1,
+                               city = @city,
+                               service_type = @service_type,
+                               technician_name = @technician_name,
+                               scheduled_date = @scheduled_date,
+                               start_time = @start_time,
+                               status = @status,
+                               fee_amount = @fee_amount,
+                               paid_amount = @paid_amount,
+                               payment_status = @payment_status
+                           WHERE appointment_id = @appointment_id;
+                           """;
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = new SqlCommand(sql, connection);
+        FillAppointmentParameters(command, appointment, includeId: true);
+        connection.Open();
+        command.ExecuteNonQuery();
+    }
+
+    public void DeleteAppointment(int appointmentId)
+    {
+        const string sql = "DELETE FROM dbo.HomeServiceAppointment WHERE appointment_id = @appointment_id;";
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@appointment_id", appointmentId);
+        connection.Open();
+        command.ExecuteNonQuery();
+    }
+
+    private static void FillAppointmentParameters(SqlCommand command, HomeServiceAppointment appointment, bool includeId)
+    {
+        if (includeId)
+        {
+            command.Parameters.AddWithValue("@appointment_id", appointment.AppointmentId);
+        }
+
+        command.Parameters.AddWithValue("@customer_id", appointment.CustomerId);
+        command.Parameters.AddWithValue("@address_line1", appointment.AddressLine1);
+        command.Parameters.AddWithValue("@city", (object?)appointment.City ?? DBNull.Value);
+        command.Parameters.AddWithValue("@service_type", appointment.ServiceType);
+        command.Parameters.AddWithValue("@technician_name", appointment.TechnicianName);
+        command.Parameters.AddWithValue("@scheduled_date", appointment.ScheduledDate.Date);
+        command.Parameters.AddWithValue("@start_time", appointment.StartTime);
+        command.Parameters.AddWithValue("@status", appointment.Status);
+        command.Parameters.AddWithValue("@fee_amount", appointment.FeeAmount);
+        command.Parameters.AddWithValue("@paid_amount", appointment.PaidAmount);
+        command.Parameters.AddWithValue("@payment_status", appointment.PaymentStatus);
+    }
 }
