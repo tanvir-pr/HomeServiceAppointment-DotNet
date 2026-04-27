@@ -31,6 +31,10 @@
             <TextBox x:Name="CustomerPhoneTextBox" Margin="0,0,0,10"/>
             <TextBlock Text="Default Address" Margin="0,0,0,4"/>
             <TextBox x:Name="CustomerAddressTextBox" Margin="0,0,0,16"/>
+
+            <Button Content="Create Customer" Height="30" Margin="0,0,0,8" Click="CreateCustomer_Click"/>
+            <Button Content="Update Customer" Height="30" Margin="0,0,0,8" Click="UpdateCustomer_Click"/>
+            <Button Content="Delete Customer" Height="30" Margin="0,0,0,8" Click="DeleteCustomer_Click"/>
             <Button Content="Refresh" Height="30" Click="RefreshData_Click"/>
         </StackPanel>
     </Grid>
