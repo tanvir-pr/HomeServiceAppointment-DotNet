@@ -9,6 +9,7 @@ public partial class MainWindow : Window
 {
     private readonly HomeServiceRepository _repository = new();
     private Customer? _selectedCustomer;
+    private HomeServiceAppointment? _selectedAppointment;
 
     public MainWindow()
     {
@@ -20,6 +21,7 @@ public partial class MainWindow : Window
     private void RefreshData()
     {
         CustomerDataGrid.ItemsSource = _repository.GetCustomers();
+        AppointmentDataGrid.ItemsSource = _repository.GetAppointments();
     }
 
     private void RefreshData_Click(object sender, RoutedEventArgs e) => RefreshData();
@@ -118,6 +120,23 @@ public partial class MainWindow : Window
         CustomerEmailTextBox.Text = string.Empty;
         CustomerPhoneTextBox.Text = string.Empty;
         CustomerAddressTextBox.Text = string.Empty;
+    }
+
+    private void AppointmentDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _selectedAppointment = AppointmentDataGrid.SelectedItem as HomeServiceAppointment;
+    }
+
+    private void CreateAppointment_Click(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void UpdateAppointment_Click(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void DeleteAppointment_Click(object sender, RoutedEventArgs e)
+    {
     }
 
     private static string? ToNullable(string value)
