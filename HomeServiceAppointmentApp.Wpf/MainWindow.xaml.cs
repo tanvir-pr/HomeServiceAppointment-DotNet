@@ -1,4 +1,4 @@
-using HomeServiceAppointmentApp.Wpf.Data;
+﻿using HomeServiceAppointmentApp.Wpf.Data;
 using HomeServiceAppointmentApp.Wpf.Models;
 using System.Globalization;
 using System.Windows;
@@ -15,8 +15,23 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        _repository.EnsureDatabase();
-        RefreshData();
+        try
+        {
+            _repository.EnsureDatabase();
+            RefreshData();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                "Could not connect to SQL Server or create the database.\n\n" +
+                "Use LocalDB: Server name (localdb)\\\\MSSQLLocalDB in SSMS, or install SQL Server Express / LocalDB.\n\n" +
+                "Details:\n" + ex.Message,
+                "Database error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            CustomerDataGrid.ItemsSource = Array.Empty<Customer>();
+            AppointmentDataGrid.ItemsSource = Array.Empty<HomeServiceAppointment>();
+        }
     }
 
     private void RefreshData()
